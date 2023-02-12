@@ -43,14 +43,25 @@ def room_avaliable(room_id: int, start_date: str, end_date: str):
 
 @app.get("/reservation/by-name/{name}")
 def get_reservation_by_name(name:str):
-    return {"result": list(collection.find({"name": name}))}
+    if type(name) !=  str:
+        raise HTTPException(400, "Name should be string")
+    reservation_list = []
+    for item in collection.find({"name": name}):
+        reservation_list.append(item)
+    return {"result": reservation_list}
 
 @app.get("/reservation/by-room/{room_id}")
 def get_reservation_by_room(room_id: int):
+    if room_id not in range(1,11):
+        raise HTTPException(400, "room id doesn't exist.")
+    reservation_list = []
+    for item in collection.find({"room_id": room_id}):
+        reservation_list.append(item)
     return {"result": list(collection.find({"room_id": room_id}))}
 
-@app.post("/reservation",status_code=201)
+@app.post("/reservation")
 def reserve(reservation : Reservation):
+    if 
     collection.update_one({"name": reservation.name, "start_date": reservation.start_date, "end_date": reservation.end_date, "room_id": reservation.room_id})
     return {"msg": "already reserve"}
 
@@ -61,6 +72,8 @@ def update_reservation(reservation: Reservation, new_start_date: date = Body(), 
 
 @app.delete("/reservation/delete")
 def cancel_reservation(reservation: Reservation):
+    if collection.find_one({"id": reservation.room_id}):
+        raise HTTPException(500, "Room id is not found")
     collection.delete_one({"name": reservation.name, "start_date": reservation.start_date, "end_date": reservation.end_date, "room_id": reservation.room_id}) 
     return {"msg": "already delete"}
 
